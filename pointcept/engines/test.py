@@ -221,7 +221,13 @@ class SemSegTester(TesterBase):
                     assert "inverse" in data_dict.keys()
                     pred = pred[data_dict["inverse"]]
                     segment = data_dict["origin_segment"]
-                np.save(pred_save_path, pred)
+                # added for itri Dataset
+                if self.cfg.data.test.type == "ItriDataset":
+                    pred_inv = np.vectorize(
+                    self.test_loader.dataset.learning_map_inv.__getitem__
+                    )(pred).astype(np.int32)
+
+                np.save(pred_save_path, pred_inv)
             if (
                 self.cfg.data.test.type == "ScanNetDataset"
                 or self.cfg.data.test.type == "ScanNet200Dataset"
