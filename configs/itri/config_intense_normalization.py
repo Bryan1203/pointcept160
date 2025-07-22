@@ -10,16 +10,17 @@ num_worker = 12
 batch_size = 12
 batch_size_val = None
 batch_size_test = None
-epoch = 80
-eval_epoch = 80
+epoch = 50
+eval_epoch = 50
 sync_bn = False
 enable_amp = True
-amp_dtype = 'bfloat16'
+amp_dtype = 'float16'
+clip_grad = 1.0
 
 empty_cache = False
 find_unused_parameters = False
 mix_prob = 0.8
-param_dicts = [dict(keyword='block', lr=0.004)]
+param_dicts = [dict(keyword='block', lr=0.002)]
 
 hooks = [
     dict(type="CheckpointLoader"),
@@ -78,10 +79,10 @@ model = dict(
             ignore_index=-1)
     ])
 
-optimizer = dict(type='AdamW', lr=0.004, weight_decay=0.005)
+optimizer = dict(type='AdamW', lr=0.002, weight_decay=0.005)
 scheduler = dict(
     type='OneCycleLR',
-    max_lr=[0.004, 0.0004],
+    max_lr=[0.002, 0.0002],
     pct_start=0.04,
     anneal_strategy='cos',
     div_factor=10.0,
@@ -100,7 +101,7 @@ names = ['none', 'solid', 'broken', 'solid_solid', 'solid_broken', 'broken_solid
 
 data = dict(
     num_classes=12,
-    ignore_index=-1,
+    ignore_index=ignore_index,
     names=names,
     
     # Multi-domain training
