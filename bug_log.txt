@@ -1,0 +1,3 @@
+Bug: AssertionError: Trainer: DefaultSegmentorV2: PointTransformerV3: Make sure flash_attn is installed
+Reason: ubuntu version is 20.04.12 newer ubuntu version might work
+Fix: install flash_attn==2.7.4.post1 or upgrade to newer Ubuntu version
