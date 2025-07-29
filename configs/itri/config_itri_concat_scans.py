@@ -89,19 +89,20 @@ scheduler = dict(
     final_div_factor=100.0)
 
 # Multi-domain data configuration with 3-scan concatenation
+
 data_roots = [
-    # '/home/bryan/pointcloud_data/hsinchu_q2/',
-    # '/home/bryan/pointcloud_data/airport_q2/',
-    '/home/bryan/pointcloud_data/evaluation_dataset/eval_20200109_075520_0',
-    '/home/bryan/pointcloud_data/evaluation_dataset/eval_20200910_050202_0',
-    '/home/bryan/pointcloud_data/evaluation_dataset/eval_20200910_063732_0_a',
-    '/home/bryan/pointcloud_data/evaluation_dataset/eval_20200910_063732_0_b',
-    '/home/bryan/pointcloud_data/evaluation_dataset/eval_20250616_035346_0_jp'
+    '/data2/itri464058/pointcloud_data/hsinchu_q2/',
+    '/data2/itri464058/pointcloud_data/airport_q2/',
+    # '/data2/itri464058/pointcloud_data/evaluation_dataset/eval_20200109_075520_0',
+    # '/data2/itri464058/pointcloud_data/evaluation_dataset/eval_20200910_050202_0',
+    # '/data2/itri464058/pointcloud_data/evaluation_dataset/eval_20200910_063732_0_a',
+    # '/data2/itri464058/pointcloud_data/evaluation_dataset/eval_20200910_063732_0_b',
+    # '/data2/itri464058/pointcloud_data/evaluation_dataset/eval_20250616_035346_0_jp'
 ]
 
 domain_names = [
-    # 'hsinchu_q2', 'airport_q2',
-    'eval_20200109_075520_0', 'eval_20200910_050202_0', 'eval_20200910_063732_0_a', 'eval_20200910_063732_0_b', 'eval_20250616_035346_0_jp'
+    'hsinchu_q2', 'airport_q2',
+    # 'eval_20200109_075520_0', 'eval_20200910_050202_0', 'eval_20200910_063732_0_a', 'eval_20200910_063732_0_b', 'eval_20250616_035346_0_jp'
     ]
 
 ignore_index = -1
@@ -119,7 +120,7 @@ data = dict(
         data_root=data_roots,  # Pass list for multi-domain
         domain_names=domain_names,
         domain_balance=False,  # Balance samples across domains
-        concat_scans=3,  # Concatenate 3 consecutive scans
+        concat_scans=8,  # Concatenate 8 consecutive scans
         transform=[
             dict(
                 type='RandomRotate',
@@ -130,6 +131,18 @@ data = dict(
             dict(type='RandomScale', scale=[0.9, 1.1]),
             dict(type='RandomFlip', p=0.5),
             dict(type='RandomJitter', sigma=0.005, clip=0.02),
+            # dict(type='IntensityAugmentation', 
+            #     scale_range=(0.8, 1.2),
+            #     shift_range=(-3.0, 3.0),
+            #     noise_std=1.0,
+            #     gamma_range=(0.8, 1.2),
+            #     augment_prob=0.7),
+            dict(type='IntensityAugmentation', 
+                scale_range=(0.6, 1.8),        # Increased range to handle 4x intensity variation
+                shift_range=(-8.0, 8.0),       # Larger shifts to bridge domain gaps
+                noise_std=2.0,                 # Higher noise to improve robustness
+                gamma_range=(0.6, 1.5),        # Wider gamma range for different contrast patterns
+                augment_prob=0.8),             # Higher probability for multi-domain training
             # Note: Grid sampling will handle larger point clouds from concatenation
             dict(
                 type='GridSample',
@@ -154,7 +167,7 @@ data = dict(
         data_root=data_roots,
         domain_names=domain_names,
         domain_balance=False,  # No balancing for validation
-        concat_scans=3,  # Concatenate 3 consecutive scans
+        concat_scans=8,  # Concatenate 3 consecutive scans
         transform=[
             dict(
                 type='GridSample',
@@ -178,7 +191,7 @@ data = dict(
         data_root=data_roots,
         domain_names=domain_names,
         domain_balance=False,
-        concat_scans=1,  # Concatenate 3 consecutive scans
+        concat_scans=8,  # Concatenate 3 consecutive scans
         transform=[
             dict(type='Copy', keys_dict=dict(segment='origin_segment')),
             dict(
