@@ -492,9 +492,15 @@ class ItriDataset(DefaultDataset):
     @staticmethod
     def get_learning_map(ignore_index):
         """
-        Original type -> training class mapping
+        Original type -> training class mapping with robust default handling
         """
-        learning_map = {
+        from collections import defaultdict
+        
+        # Use defaultdict to map any unknown labels to class 0 for robustness
+        learning_map = defaultdict(lambda: 0)
+        
+        # Explicit mappings
+        learning_map.update({
             -1: 0,  # unlabeled -> class 0
             0: 0,   # handle 0 labels -> class 0
             1: 0,    # 'none' -> class 0
@@ -509,7 +515,32 @@ class ItriDataset(DefaultDataset):
             10: 9,   # 'curb' -> class 9
             11: 10,  # 'custom' -> class 10
             12: 11,  # 'edge' -> class 11
-        }
+        })
+        
+        # Map range 101-158 to class 0 (except specific overrides below)
+        # for i in range(101, 158 + 1):
+        #     learning_map[i] = 0
+            
+        # Specific overrides for certain types
+        learning_map.update({
+            116: 12,
+            118: 12,
+            142: 13,
+            143: 13,
+            144: 13,
+            145: 13,
+            146: 13,
+            147: 13,
+            148: 13,
+            149: 13,
+            109: 14,
+            121: 15,
+            156: 15,
+            137: 16,
+            138: 16,
+            139: 16,
+        })
+        
         return learning_map
 
     @staticmethod
@@ -531,6 +562,11 @@ class ItriDataset(DefaultDataset):
             9: 10,   # class 9 -> 'curb' (type 10)
             10: 11,  # class 10 -> 'custom' (type 11)
             11: 12,  # class 11 -> 'edge' (type 12)
+            12: 116, # class 12 -> type 116 (first occurrence)
+            13: 142, # class 13 -> type 142 (first occurrence)
+            14: 109, # class 14 -> type 109
+            15: 121, # class 15 -> type 121 (first occurrence)
+            16: 137, # class 16 -> type 137 (first occurrence)
         }
         return learning_map_inv
 
