@@ -16,7 +16,6 @@ from .semantic_kitti import SemanticKITTIDataset
 from .nuscenes import NuScenesDataset
 from .waymo import WaymoDataset
 from .itri import ItriDataset
-from .cached_itri import GPUCachedItriDataset
 
 # object
 from .modelnet import ModelNetDataset
