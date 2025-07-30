@@ -562,11 +562,11 @@ class ItriDataset(DefaultDataset):
             9: 10,   # class 9 -> 'curb' (type 10)
             10: 11,  # class 10 -> 'custom' (type 11)
             11: 12,  # class 11 -> 'edge' (type 12)
-            12: 116, # class 12 -> type 116 (first occurrence)
-            13: 142, # class 13 -> type 142 (first occurrence)
-            14: 109, # class 14 -> type 109
-            15: 121, # class 15 -> type 121 (first occurrence)
-            16: 137, # class 16 -> type 137 (first occurrence)
+            12: 116, # class 12 -> 'channelizing_line' (type 116)
+            13: 142, # class 13 -> 'hatching' (type 142)
+            14: 109, # class 14 -> 'directional_arrow' (type 109)
+            15: 121, # class 15 -> 'slow_mark' (type 121)
+            16: 137, # class 16 -> 'motorcycle_waiting_zone' (type 137)
         }
         return learning_map_inv
 
@@ -593,18 +593,24 @@ class ItriDataset(DefaultDataset):
     def get_class_names(cls):
         """Get human-readable class names for training classes 0-11"""
         return [
-            'none',         # class 0
-            'solid',        # class 1
-            'broken',       # class 2
-            'solid_solid',  # class 3
-            'solid_broken', # class 4
-            'broken_solid', # class 5
-            'broken_broken',# class 6
-            'botts_dots',   # class 7
-            'grass',        # class 8
-            'curb',         # class 9
-            'custom',       # class 10
-            'edge'          # class 11
+            'none',                     # class 0
+            'solid',                    # class 1
+            'broken',                   # class 2
+            'solid_solid',              # class 3
+            'solid_broken',             # class 4
+            'broken_solid',             # class 5
+            'broken_broken',            # class 6
+            'botts_dots',               # class 7
+            'grass',                    # class 8
+            'curb',                     # class 9
+            'custom',                   # class 10
+            'edge',                     # class 11
+            'channelizing_line',        # class 12
+            'hatching',                 # class 13
+            'directional_arrow',        # class 14
+            'slow_mark',                # class 15
+            'motorcycle_waiting_zone',  # class 16
+            'pedestrian_crossing'       # class 17
         ]
 
     @classmethod
@@ -622,7 +628,13 @@ class ItriDataset(DefaultDataset):
             9: 'grass',
             10: 'curb',
             11: 'custom',
-            12: 'edge'
+            12: 'edge',
+            13: 'channelizing_line',
+            14: 'hatching',
+            15: 'directional_arrow',
+            16: 'slow_mark',
+            17: 'motorcycle_waiting_zone',
+            18: 'pedestrian_crossing'
         }
     
     def split_concatenated_predictions(self, predictions, data_dict):
