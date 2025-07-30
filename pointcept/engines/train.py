@@ -291,7 +291,7 @@ class Trainer(TrainerBase):
             worker_init_fn=init_fn,
             drop_last=len(train_data) > self.cfg.batch_size,
             persistent_workers=True,
-            prefetch_factor = 8,
+            prefetch_factor=8,
         )
         return train_loader
 
@@ -331,7 +331,6 @@ class Trainer(TrainerBase):
             grad_scaler = torch.cuda.amp.GradScaler
         scaler = grad_scaler() if self.cfg.enable_amp else None
         return scaler
-
 
 
 @TRAINERS.register_module("MultiDatasetTrainer")

@@ -224,7 +224,7 @@ class SemSegTester(TesterBase):
                 # added for itri Dataset
                 if self.cfg.data.test.type == "ItriDataset":
                     pred_inv = np.vectorize(
-                    self.test_loader.dataset.learning_map_inv.__getitem__
+                        self.test_loader.dataset.learning_map_inv.__getitem__
                     )(pred).astype(np.int32)
 
                 np.save(pred_save_path, pred_inv)

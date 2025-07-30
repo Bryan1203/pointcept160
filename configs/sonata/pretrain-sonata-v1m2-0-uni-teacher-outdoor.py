@@ -81,7 +81,7 @@ model = dict(
 # scheduler settings
 # epoch = 200
 epoch = 20
-eval_epoch = 20 
+eval_epoch = 20
 base_lr = 0.0014  # Scaled with sqrt(12/96) = sqrt(1/8) from original 0.004
 lr_decay = 0.9  # layer-wise lr decay
 
@@ -122,22 +122,34 @@ transform = [
         local_view_scale=(0.2, 0.6),
         global_shared_transform=[
             # Add intensity augmentation similar to your ITRI config
-            dict(type='IntensityAugmentation', 
+            dict(
+                type="IntensityAugmentation",
                 scale_range=(0.9, 1.1),  # More conservative for pretraining
                 shift_range=(-2.0, 2.0),  # Smaller range than supervised
                 noise_std=0.5,
                 gamma_range=(0.9, 1.1),
-                augment_prob=0.5),  # Lower prob for pretraining
-            dict(type="RandomDropout", dropout_ratio=0.1, dropout_application_ratio=0.3),  # Reduced intensity
+                augment_prob=0.5,
+            ),  # Lower prob for pretraining
+            dict(
+                type="RandomDropout", dropout_ratio=0.1, dropout_application_ratio=0.3
+            ),  # Reduced intensity
         ],
         global_transform=[
             dict(type="CenterShift", apply_z=False),  # Don't shift Z for outdoor
             # dict(type="RandomScale", scale=[0.95, 1.05]),  # Removed - inappropriate for road scenes
-            dict(type="RandomRotate", angle=[-0.5, 0.5], axis="z", center=[0, 0, 0], p=0.7),  # More rotation
+            dict(
+                type="RandomRotate",
+                angle=[-0.5, 0.5],
+                axis="z",
+                center=[0, 0, 0],
+                p=0.7,
+            ),  # More rotation
             dict(type="RandomRotate", angle=[-1 / 128, 1 / 128], axis="x", p=0.3),
             dict(type="RandomRotate", angle=[-1 / 128, 1 / 128], axis="y", p=0.3),
             dict(type="RandomFlip", p=0.5),
-            dict(type="RandomJitter", sigma=0.003, clip=0.015),  # Slightly reduced jitter
+            dict(
+                type="RandomJitter", sigma=0.003, clip=0.015
+            ),  # Slightly reduced jitter
         ],
         local_transform=[
             dict(type="CenterShift", apply_z=False),
@@ -148,17 +160,21 @@ transform = [
             dict(type="RandomFlip", p=0.5),
             dict(type="RandomJitter", sigma=0.005, clip=0.02),
             # Additional intensity augmentation for local views
-            dict(type='IntensityAugmentation', 
+            dict(
+                type="IntensityAugmentation",
                 scale_range=(0.8, 1.2),  # More aggressive for local views
                 shift_range=(-1.0, 1.0),
                 noise_std=0.3,
                 gamma_range=(0.9, 1.1),
-                augment_prob=0.3),
+                augment_prob=0.3,
+            ),
         ],
         max_size=65536,  # Increased from 32768 - good balance for 139K point clouds
     ),
     dict(type="ToTensor"),
-    dict(type="Update", keys_dict={"grid_size": 0.05}),  # Keep consistent with initial grid_size
+    dict(
+        type="Update", keys_dict={"grid_size": 0.05}
+    ),  # Keep consistent with initial grid_size
     dict(
         type="Collect",
         keys=(
@@ -167,39 +183,51 @@ transform = [
             "global_strength",  # Changed from global_color
             "global_offset",
             "local_origin_coord",
-            "local_coord", 
-            "local_strength",   # Changed from local_color
+            "local_coord",
+            "local_strength",  # Changed from local_color
             "local_offset",
             "grid_size",
             "name",
         ),
         offset_keys_dict=dict(),
         global_feat_keys=("global_coord", "global_strength"),  # Only coord + strength
-        local_feat_keys=("local_coord", "local_strength"),     # Only coord + strength
+        local_feat_keys=("local_coord", "local_strength"),  # Only coord + strength
     ),
 ]
 data_roots = [
-    '/data2/itri464058/pointcloud_data/hsinchu_q2/',
-    '/data2/itri464058/pointcloud_data/airport_q2/'
+    "/data2/itri464058/pointcloud_data/hsinchu_q2/",
+    "/data2/itri464058/pointcloud_data/airport_q2/",
 ]
 
-domain_names = ['hsinchu_q2', 'airport_q2']
+domain_names = ["hsinchu_q2", "airport_q2"]
 
 data = dict(
     num_classes=12,
     ignore_index=-1,
-    names=['none', 'solid', 'broken', 'solid_solid', 'solid_broken', 'broken_solid', 'broken_broken', 'botts_dots', 'grass', 'curb', 'custom', 'edge'],
-    
+    names=[
+        "none",
+        "solid",
+        "broken",
+        "solid_solid",
+        "solid_broken",
+        "broken_solid",
+        "broken_broken",
+        "botts_dots",
+        "grass",
+        "curb",
+        "custom",
+        "edge",
+    ],
     train=dict(
-        type='ItriDataset',
-        split='test',
+        type="ItriDataset",
+        split="test",
         data_root=data_roots,  # Single domain first
         domain_names=domain_names,
         test_mode=False,
         ignore_index=-1,
         loop=1,
         transform=transform,  # Use the Sonata transforms defined above
-    )
+    ),
 )
 
 # trainer settings (using DefaultTrainer for single dataset)

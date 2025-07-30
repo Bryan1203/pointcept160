@@ -1199,11 +1199,11 @@ class Compose(object):
 @TRANSFORMS.register_module()
 class RandomIntensityScale(object):
     """Random scaling of intensity/strength values"""
-    
+
     def __init__(self, scale_range=(0.8, 1.2), p=0.7):
         self.scale_range = scale_range
         self.p = p
-    
+
     def __call__(self, data_dict):
         if "strength" in data_dict.keys() and np.random.rand() < self.p:
             scale = np.random.uniform(self.scale_range[0], self.scale_range[1])
@@ -1216,11 +1216,11 @@ class RandomIntensityScale(object):
 @TRANSFORMS.register_module()
 class RandomIntensityShift(object):
     """Random shift of intensity/strength values"""
-    
+
     def __init__(self, shift_range=(-3.0, 3.0), p=0.6):
         self.shift_range = shift_range
         self.p = p
-    
+
     def __call__(self, data_dict):
         if "strength" in data_dict.keys() and np.random.rand() < self.p:
             shift = np.random.uniform(self.shift_range[0], self.shift_range[1])
@@ -1233,11 +1233,11 @@ class RandomIntensityShift(object):
 @TRANSFORMS.register_module()
 class RandomIntensityNoise(object):
     """Add random noise to intensity/strength values"""
-    
+
     def __init__(self, noise_std=1.0, p=0.4):
         self.noise_std = noise_std
         self.p = p
-    
+
     def __call__(self, data_dict):
         if "strength" in data_dict.keys() and np.random.rand() < self.p:
             noise = np.random.normal(0, self.noise_std, data_dict["strength"].shape)
@@ -1250,11 +1250,11 @@ class RandomIntensityNoise(object):
 @TRANSFORMS.register_module()
 class RandomIntensityGamma(object):
     """Apply random gamma correction to intensity/strength values"""
-    
+
     def __init__(self, gamma_range=(0.8, 1.2), p=0.3):
         self.gamma_range = gamma_range
         self.p = p
-    
+
     def __call__(self, data_dict):
         if "strength" in data_dict.keys() and np.random.rand() < self.p:
             gamma = np.random.uniform(self.gamma_range[0], self.gamma_range[1])
@@ -1272,17 +1272,19 @@ class RandomIntensityGamma(object):
 @TRANSFORMS.register_module()
 class IntensityAugmentation(object):
     """Combined intensity augmentation (all-in-one transform)"""
-    
-    def __init__(self, 
-                 scale_range=(0.8, 1.2),
-                 shift_range=(-3.0, 3.0), 
-                 noise_std=1.0,
-                 gamma_range=(0.8, 1.2),
-                 augment_prob=0.7):
+
+    def __init__(
+        self,
+        scale_range=(0.8, 1.2),
+        shift_range=(-3.0, 3.0),
+        noise_std=1.0,
+        gamma_range=(0.8, 1.2),
+        augment_prob=0.7,
+    ):
         """
         Args:
             scale_range: Range for random scaling
-            shift_range: Range for random shifting  
+            shift_range: Range for random shifting
             noise_std: Standard deviation for random noise
             gamma_range: Range for gamma correction
             augment_prob: Probability of applying any augmentation
@@ -1292,29 +1294,29 @@ class IntensityAugmentation(object):
         self.noise_std = noise_std
         self.gamma_range = gamma_range
         self.augment_prob = augment_prob
-    
+
     def __call__(self, data_dict):
         if "strength" not in data_dict.keys():
             return data_dict
-            
+
         if np.random.rand() < self.augment_prob:
             strength = data_dict["strength"].copy()
-            
+
             # Apply random scaling (80% chance)
             if np.random.rand() < 0.8:
                 scale = np.random.uniform(self.scale_range[0], self.scale_range[1])
                 strength = strength * scale
-            
+
             # Apply random shift (60% chance)
             if np.random.rand() < 0.6:
                 shift = np.random.uniform(self.shift_range[0], self.shift_range[1])
                 strength = strength + shift
-            
+
             # Apply random noise (40% chance)
             if np.random.rand() < 0.4:
                 noise = np.random.normal(0, self.noise_std, strength.shape)
                 strength = strength + noise
-            
+
             # Apply gamma correction (30% chance)
             if np.random.rand() < 0.3:
                 gamma = np.random.uniform(self.gamma_range[0], self.gamma_range[1])
@@ -1322,22 +1324,24 @@ class IntensityAugmentation(object):
                 normalized = strength / 255.0
                 normalized[non_zero_mask] = np.power(normalized[non_zero_mask], gamma)
                 strength = normalized * 255.0
-            
+
             # Ensure values stay in valid range
             data_dict["strength"] = np.clip(strength, 0.0, 255.0).astype(np.float32)
-        
+
         return data_dict
 
 
 @TRANSFORMS.register_module()
 class IntensityNormalization(object):
     """Normalize intensity values for domain robustness using per-scan percentile scaling"""
-    
-    def __init__(self, 
-                 normalization_type='percentile',  # 'percentile', 'robust', 'minmax', 'zscore'
-                 target_range=(0, 255),
-                 percentiles=(2, 98),
-                 intensity_stats=None):
+
+    def __init__(
+        self,
+        normalization_type="percentile",  # 'percentile', 'robust', 'minmax', 'zscore'
+        target_range=(0, 255),
+        percentiles=(2, 98),
+        intensity_stats=None,
+    ):
         """
         Args:
             normalization_type: Type of normalization
@@ -1348,28 +1352,28 @@ class IntensityNormalization(object):
         self.normalization_type = normalization_type
         self.target_range = target_range
         self.percentiles = percentiles
-        
+
         # Default stats for fallback methods
         if intensity_stats is None:
             self.intensity_stats = {
-                'mean': 12.0,
-                'std': 17.0, 
-                'min': 0.0,
-                'max': 255.0,
-                'p5': 1.0,
-                'p95': 45.0,
-                'median': 8.0,
-                'iqr': 15.0
+                "mean": 12.0,
+                "std": 17.0,
+                "min": 0.0,
+                "max": 255.0,
+                "p5": 1.0,
+                "p95": 45.0,
+                "median": 8.0,
+                "iqr": 15.0,
             }
         else:
             self.intensity_stats = intensity_stats
-    
+
     def __call__(self, data_dict):
         if "strength" not in data_dict.keys():
             return data_dict
 
         strength = data_dict["strength"].copy()
-        original_zeros = (strength == 0)
+        original_zeros = strength == 0
         nonzero_strength = strength[strength > 0]
 
         # If all values are zero, skip normalization
@@ -1377,46 +1381,62 @@ class IntensityNormalization(object):
             data_dict["strength"] = strength.astype(np.float32)
             return data_dict
 
-        if self.normalization_type == 'percentile':
+        if self.normalization_type == "percentile":
             p_min, p_max = np.percentile(nonzero_strength, self.percentiles)
             strength_clipped = np.clip(strength, p_min, p_max)
             if p_max == p_min:
-                normalized = np.full_like(strength, self.target_range[0], dtype=np.float32)
+                normalized = np.full_like(
+                    strength, self.target_range[0], dtype=np.float32
+                )
             else:
                 normalized = (strength_clipped - p_min) / (p_max - p_min)
-                normalized = (normalized * (self.target_range[1] - self.target_range[0]) +
-                              self.target_range[0])
-        elif self.normalization_type == 'robust':
-            strength_clipped = np.clip(strength,
-                                       self.intensity_stats['p5'],
-                                       self.intensity_stats['p95'])
-            denom = self.intensity_stats['p95'] - self.intensity_stats['p5']
+                normalized = (
+                    normalized * (self.target_range[1] - self.target_range[0])
+                    + self.target_range[0]
+                )
+        elif self.normalization_type == "robust":
+            strength_clipped = np.clip(
+                strength, self.intensity_stats["p5"], self.intensity_stats["p95"]
+            )
+            denom = self.intensity_stats["p95"] - self.intensity_stats["p5"]
             if denom == 0:
-                normalized = np.full_like(strength, self.target_range[0], dtype=np.float32)
+                normalized = np.full_like(
+                    strength, self.target_range[0], dtype=np.float32
+                )
             else:
-                normalized = ((strength_clipped - self.intensity_stats['p5']) /
-                              (denom + 1e-8))
-                normalized = (normalized * (self.target_range[1] - self.target_range[0]) +
-                              self.target_range[0])
-        elif self.normalization_type == 'minmax':
+                normalized = (strength_clipped - self.intensity_stats["p5"]) / (
+                    denom + 1e-8
+                )
+                normalized = (
+                    normalized * (self.target_range[1] - self.target_range[0])
+                    + self.target_range[0]
+                )
+        elif self.normalization_type == "minmax":
             str_min, str_max = strength.min(), strength.max()
             if str_max == str_min:
-                normalized = np.full_like(strength, self.target_range[0], dtype=np.float32)
+                normalized = np.full_like(
+                    strength, self.target_range[0], dtype=np.float32
+                )
             else:
                 normalized = (strength - str_min) / (str_max - str_min)
-                normalized = (normalized * (self.target_range[1] - self.target_range[0]) +
-                              self.target_range[0])
-        elif self.normalization_type == 'zscore':
-            std = self.intensity_stats['std']
+                normalized = (
+                    normalized * (self.target_range[1] - self.target_range[0])
+                    + self.target_range[0]
+                )
+        elif self.normalization_type == "zscore":
+            std = self.intensity_stats["std"]
             if std == 0:
-                normalized = np.full_like(strength, self.target_range[0], dtype=np.float32)
+                normalized = np.full_like(
+                    strength, self.target_range[0], dtype=np.float32
+                )
             else:
-                normalized = ((strength - self.intensity_stats['mean']) /
-                              (std + 1e-8))
+                normalized = (strength - self.intensity_stats["mean"]) / (std + 1e-8)
                 normalized = np.clip(normalized, -3, 3)
                 normalized = (normalized + 3) / 6
-                normalized = (normalized * (self.target_range[1] - self.target_range[0]) +
-                              self.target_range[0])
+                normalized = (
+                    normalized * (self.target_range[1] - self.target_range[0])
+                    + self.target_range[0]
+                )
         else:
             normalized = strength.astype(np.float32)
 
@@ -1425,12 +1445,13 @@ class IntensityNormalization(object):
 
         # Check for NaN/Inf and fix
         if np.any(np.isnan(normalized)) or np.any(np.isinf(normalized)):
-            print("Warning: NaN or Inf detected in IntensityNormalization, setting to zero.")
+            print(
+                "Warning: NaN or Inf detected in IntensityNormalization, setting to zero."
+            )
             normalized = np.nan_to_num(normalized, nan=0.0, posinf=0.0, neginf=0.0)
 
         data_dict["strength"] = normalized.astype(np.float32)
         return data_dict
-        
 
 
 @TRANSFORMS.register_module()
@@ -1438,29 +1459,33 @@ class ValidateLabels(object):
     def __init__(self, num_classes=12, ignore_index=-1):
         self.num_classes = num_classes
         self.ignore_index = ignore_index
-    
+
     def __call__(self, data_dict):
         if "segment" in data_dict.keys():
             segment = data_dict["segment"]
-            
+
             # Debug: Check original labels
             unique_labels = np.unique(segment)
             # print(f"ValidateLabels: unique labels = {unique_labels}")
-            
+
             # Check for invalid labels
             invalid_mask = (segment >= self.num_classes) | (segment < -1)
             if np.any(invalid_mask):
                 invalid_labels = np.unique(segment[invalid_mask])
                 print(f"*** ValidateLabels: Found invalid labels: {invalid_labels}")
-                print(f"*** ValidateLabels: Number of invalid points: {np.sum(invalid_mask)}")
-                
+                print(
+                    f"*** ValidateLabels: Number of invalid points: {np.sum(invalid_mask)}"
+                )
+
                 # Fix invalid labels
                 segment[invalid_mask] = self.ignore_index
                 data_dict["segment"] = segment
                 print(f"*** ValidateLabels: Fixed invalid labels")
-                
+
                 # Verify fix
                 unique_labels_after = np.unique(segment)
-                print(f"ValidateLabels: unique labels after fix = {unique_labels_after}")
-        
+                print(
+                    f"ValidateLabels: unique labels after fix = {unique_labels_after}"
+                )
+
         return data_dict
